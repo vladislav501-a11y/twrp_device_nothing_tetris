@@ -11,6 +11,10 @@ on:
         options:
         - twrp-12.1
         - twrp-14.0
+  push:
+    branches:
+      - main
+      - master
 
 jobs:
   build:
@@ -26,7 +30,7 @@ jobs:
           haskell: true
           large-packages: true
           docker-images: true
-          swap-storage: true
+          swap-storage: false
 
       - name: Checkout Device Tree
         uses: actions/checkout@v4
@@ -38,18 +42,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git-core gnupg flex bison build-essential zip curl zlib1g-dev \
             libc6-dev-i386 libncurses5 x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev \
-            libxml2 libxml2-utils xsltproc unzip fontconfig libssl-dev bc cpio rsync python3
+            libxml2 libxml2-utils xsltproc unzip fontconfig libssl-dev bc cpio rsync python3 python-is-python3
           mkdir -p ~/bin
           curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
           chmod a+x ~/bin/repo
           git config --global user.name "Builder"
           git config --global user.email "builder@github.com"
+          git config --global --add safe.directory "*"
 
       - name: Initialize TWRP Manifest
         run: |
           mkdir -p ~/twrp
           cd ~/twrp
-          ~/bin/repo init --depth=1 -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git -b ${{ inputs.MANIFEST_BRANCH }}
+          ~/bin/repo init --depth=1 -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git -b ${{ inputs.MANIFEST_BRANCH || 'twrp-12.1' }}
           ~/bin/repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
       - name: Move Device Tree into Build Tree
@@ -65,10 +70,16 @@ jobs:
           lunch twrp_tetris-eng || lunch twrp_tetris-userdebug
           mka vendorbootimage -j$(nproc --all)
 
-      - name: Upload vendor_boot.img
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/output
+          find /home/runner/twrp/out/target/product/tetris -maxdepth 1 -name "vendor_boot.img" -exec cp {} $GITHUB_WORKSPACE/output/ \; || true
+          find /home/runner/twrp/out/target/product/tetris -maxdepth 1 -name "ramdisk-recovery.*" -exec cp {} $GITHUB_WORKSPACE/output/ \; || true
+          find /home/runner/twrp/out/target/product/tetris -maxdepth 1 -name "recovery.img" -exec cp {} $GITHUB_WORKSPACE/output/ \; || true
+          ls -la $GITHUB_WORKSPACE/output
+
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: TWRP-Tetris-vendor_boot
-          path: |
-            ~/twrp/out/target/product/tetris/vendor_boot.img
-            ~/twrp/out/target/product/tetris/ramdisk-recovery.*
+          path: output/*
