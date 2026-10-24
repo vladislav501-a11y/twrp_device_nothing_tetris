@@ -28,6 +28,7 @@ TARGET_BOOTLOADER_BOARD_NAME := tetris
 TARGET_OTA_ASSERT_DEVICE := tetris,Tetris,A015
 
 # Kernel
+TARGET_NO_KERNEL := true
 BOARD_KERNEL_CMDLINE := bootopt=64S3,32N2,64N2 rcu_nocbs=all rcutree.enable_rcu_lazy=1 bootconfig
 BOARD_KERNEL_PAGESIZE := 4096
 BOARD_BOOT_HEADER_VERSION := 4
@@ -61,8 +62,7 @@ BOARD_NOTHING_DYNAMIC_PARTITIONS_PARTITION_LIST := \
     product \
     odm \
     vendor_dlkm \
-    odm_dlkm \
-    system_dlkm
+    odm_dlkm
 
 # File systems
 TARGET_USERIMAGES_USE_EXT4 := true

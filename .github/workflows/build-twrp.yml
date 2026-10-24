@@ -75,14 +75,12 @@ jobs:
           source build/envsetup.sh
           export ALLOW_MISSING_DEPENDENCIES=true
           lunch twrp_tetris-eng || lunch twrp_tetris-userdebug
-          mka vendorbootimage -j$(nproc --all)
+          mka vendorbootimage -j$(nproc --all) || mka recoveryimage -j$(nproc --all)
 
       - name: Prepare Artifacts
         run: |
           mkdir -p $GITHUB_WORKSPACE/output
-          find /home/runner/twrp/out/target/product/tetris -maxdepth 1 -name "vendor_boot.img" -exec cp {} $GITHUB_WORKSPACE/output/ \; || true
-          find /home/runner/twrp/out/target/product/tetris -maxdepth 1 -name "ramdisk-recovery.*" -exec cp {} $GITHUB_WORKSPACE/output/ \; || true
-          find /home/runner/twrp/out/target/product/tetris -maxdepth 1 -name "recovery.img" -exec cp {} $GITHUB_WORKSPACE/output/ \; || true
+          find ~/twrp/out/target/product/tetris/ -maxdepth 1 \( -name "*.img" -o -name "ramdisk-recovery.*" \) -exec cp {} $GITHUB_WORKSPACE/output/ \; || true
           ls -la $GITHUB_WORKSPACE/output
 
       - name: Upload Artifacts
