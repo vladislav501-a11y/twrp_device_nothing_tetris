@@ -1,0 +1,89 @@
+#
+# Copyright (C) 2026 The Android Open Source Project
+# Copyright (C) 2026 The TWRP Open Source Project
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+DEVICE_PATH := device/nothing/tetris
+
+# Architecture
+TARGET_ARCH := arm64
+TARGET_ARCH_VARIANT := armv8-a
+TARGET_CPU_ABI := arm64-v8a
+TARGET_CPU_ABI2 :=
+TARGET_CPU_VARIANT := generic
+
+TARGET_2ND_ARCH := arm
+TARGET_2ND_ARCH_VARIANT := armv7-a-neon
+TARGET_2ND_CPU_ABI := armeabi-v7a
+TARGET_2ND_CPU_ABI2 := armeabi
+TARGET_2ND_CPU_VARIANT := generic
+
+# Platform
+TARGET_BOARD_PLATFORM := mt6878
+TARGET_BOOTLOADER_BOARD_NAME := tetris
+
+# Assert
+TARGET_OTA_ASSERT_DEVICE := tetris,Tetris,A015
+
+# Kernel
+BOARD_KERNEL_CMDLINE := bootopt=64S3,32N2,64N2 rcu_nocbs=all rcutree.enable_rcu_lazy=1 bootconfig
+BOARD_KERNEL_PAGESIZE := 4096
+BOARD_BOOT_HEADER_VERSION := 4
+BOARD_KERNEL_BASE := 0x00000000
+BOARD_KERNEL_OFFSET := 0x40000000
+BOARD_RAMDISK_OFFSET := 0x66f00000
+BOARD_TAGS_OFFSET := 0x47c80000
+BOARD_DTB_OFFSET := 0x41bf0040
+
+TARGET_PREBUILT_DTB := $(DEVICE_PATH)/prebuilt/dtb
+BOARD_INCLUDE_DTB_IN_BOOTIMG := false
+BOARD_PREBUILT_DTBOIMAGE := $(DEVICE_PATH)/prebuilt/dtbo.img
+BOARD_INCLUDE_RECOVERY_DTBO := true
+
+# Generic Kernel Image (GKI) & vendor_boot
+BOARD_USES_GENERIC_KERNEL_IMAGE := true
+BOARD_MOVE_RECOVERY_RESOURCES_TO_VENDOR_BOOT := true
+BOARD_INCLUDE_RECOVERY_RAMDISK_IN_VENDOR_BOOT := true
+BOARD_VENDOR_BOOTIMAGE_PARTITION_SIZE := 67108864
+
+# Dynamic Partitions
+BOARD_SUPER_PARTITION_SIZE := 9126805504
+BOARD_SUPER_PARTITION_GROUPS := nothing_dynamic_partitions
+BOARD_NOTHING_DYNAMIC_PARTITIONS_PARTITION_LIST := \
+    system \
+    system_ext \
+    vendor \
+    product \
+    odm \
+    vendor_dlkm \
+    odm_dlkm \
+    system_dlkm
+
+# File systems
+TARGET_USERIMAGES_USE_EXT4 := true
+TARGET_USERIMAGES_USE_F2FS := true
+BOARD_HAS_LARGE_FILESYSTEM := true
+TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery.fstab
+
+# TWRP Configuration
+TW_THEME := portrait_hdpi
+DEVICE_RESOLUTION := 1080x2400
+TARGET_SCREEN_WIDTH := 1080
+TARGET_SCREEN_HEIGHT := 2400
+TW_SCREEN_BLANK_ON_BOOT := true
+TW_NO_SCREEN_BLANK := true
+TW_DEFAULT_BRIGHTNESS := 1200
+TW_MAX_BRIGHTNESS := 2047
+TW_BRIGHTNESS_PATH := "/sys/class/leds/lcd-backlight/brightness"
+
+TW_INCLUDE_CRYPTO := false
+TW_INCLUDE_FBE_METADATA_DECRYPT := true
+TW_USE_TOOLBOX := true
+TW_INPUT_BLACKLIST := "hbtp_vm"
+TW_EXCLUDE_DEFAULT_USB_INIT := true
+TW_HAS_MTP := true
+TW_NO_EXFAT_FUSE := true
+TW_EXTRA_LANGUAGES := true
+TW_INCLUDE_REPACKED_RECOVERY := true

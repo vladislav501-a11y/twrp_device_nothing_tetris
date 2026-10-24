@@ -1,0 +1,74 @@
+name: Build TWRP for CMF Phone 1 (tetris)
+
+on:
+  workflow_dispatch:
+    inputs:
+      MANIFEST_BRANCH:
+        description: 'TWRP Manifest Branch'
+        required: true
+        default: 'twrp-12.1'
+        type: choice
+        options:
+        - twrp-12.1
+        - twrp-14.0
+
+jobs:
+  build:
+    name: Build TWRP Recovery
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      - name: Checkout Device Tree
+        uses: actions/checkout@v4
+        with:
+          path: device/nothing/tetris
+
+      - name: Set up Environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git-core gnupg flex bison build-essential zip curl zlib1g-dev \
+            libc6-dev-i386 libncurses5 x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev \
+            libxml2 libxml2-utils xsltproc unzip fontconfig libssl-dev bc cpio rsync python3
+          mkdir -p ~/bin
+          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+          chmod a+x ~/bin/repo
+          git config --global user.name "Builder"
+          git config --global user.email "builder@github.com"
+
+      - name: Initialize TWRP Manifest
+        run: |
+          mkdir -p ~/twrp
+          cd ~/twrp
+          ~/bin/repo init --depth=1 -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git -b ${{ inputs.MANIFEST_BRANCH }}
+          ~/bin/repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+
+      - name: Move Device Tree into Build Tree
+        run: |
+          mkdir -p ~/twrp/device/nothing/
+          cp -r $GITHUB_WORKSPACE/device/nothing/tetris ~/twrp/device/nothing/tetris
+
+      - name: Build TWRP (vendor_boot)
+        run: |
+          cd ~/twrp
+          source build/envsetup.sh
+          export ALLOW_MISSING_DEPENDENCIES=true
+          lunch twrp_tetris-eng || lunch twrp_tetris-userdebug
+          mka vendorbootimage -j$(nproc --all)
+
+      - name: Upload vendor_boot.img
+        uses: actions/upload-artifact@v4
+        with:
+          name: TWRP-Tetris-vendor_boot
+          path: |
+            ~/twrp/out/target/product/tetris/vendor_boot.img
+            ~/twrp/out/target/product/tetris/ramdisk-recovery.*
