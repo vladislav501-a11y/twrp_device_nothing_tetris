@@ -22,15 +22,16 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Free Disk Space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: false
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force || true
+          echo "Disk space after cleanup:"
+          df -h
 
       - name: Checkout Device Tree
         uses: actions/checkout@v4
@@ -46,6 +47,7 @@ jobs:
           mkdir -p ~/bin
           curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
           chmod a+x ~/bin/repo
+          echo "$HOME/bin" >> $GITHUB_PATH
           git config --global user.name "Builder"
           git config --global user.email "builder@github.com"
           git config --global --add safe.directory "*"
@@ -54,7 +56,12 @@ jobs:
         run: |
           mkdir -p ~/twrp
           cd ~/twrp
-          ~/bin/repo init --depth=1 -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git -b ${{ inputs.MANIFEST_BRANCH || 'twrp-12.1' }}
+          BRANCH="${{ github.event.inputs.MANIFEST_BRANCH }}"
+          if [ -z "$BRANCH" ]; then
+            BRANCH="twrp-12.1"
+          fi
+          echo "Syncing branch: $BRANCH"
+          ~/bin/repo init --depth=1 -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git -b $BRANCH
           ~/bin/repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
       - name: Move Device Tree into Build Tree
