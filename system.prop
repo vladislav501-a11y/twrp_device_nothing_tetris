@@ -2,21 +2,6 @@
 # System properties for CMF Phone 1 (tetris) TWRP
 #
 
-ro.product.brand=Nothing
-ro.product.manufacturer=Nothing
-ro.product.model=A015
-ro.product.device=tetris
-
-ro.product.system.brand=Nothing
-ro.product.system.manufacturer=Nothing
-ro.product.system.model=A015
-ro.product.system.device=tetris
-
-ro.product.vendor.brand=Nothing
-ro.product.vendor.manufacturer=Nothing
-ro.product.vendor.model=A015
-ro.product.vendor.device=tetris
-
 # TWRP vendor_boot mode
 ro.twrp.vendor_boot=true
 
