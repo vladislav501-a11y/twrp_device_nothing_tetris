@@ -69,6 +69,11 @@ jobs:
           mkdir -p ~/twrp/device/nothing/
           cp -r $GITHUB_WORKSPACE/device/nothing/tetris ~/twrp/device/nothing/tetris
 
+      - name: Patch Build System for rsync symlinks
+        run: |
+          sed -i 's/rsync -a --exclude=sdcard/rsync -a --force --exclude=sdcard --exclude=\/root\/vendor --exclude=root\/vendor --exclude=\/root\/product --exclude=root\/product --exclude=\/root\/system_ext --exclude=root\/system_ext --exclude=\/root\/odm --exclude=root\/odm/g' ~/twrp/build/make/core/Makefile || true
+          grep -n "rsync -a" ~/twrp/build/make/core/Makefile || true
+
       - name: Build TWRP (vendor_boot)
         run: |
           cd ~/twrp
